@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yuning Zhang · AI Inference Serving</title>
+<meta name="description" content="Yuning Zhang is a PhD candidate at the University of Sydney working on AI inference serving: GPU scheduling and resource management for multi-tenant, agentic, and edge workloads.">
+<meta property="og:title" content="Yuning Zhang · AI Inference Serving">
+<meta property="og:description" content="PhD candidate at the University of Sydney. Efficient AI inference serving systems for LLMs, agents, and multimodal models.">
+<meta property="og:type" content="website">
+<meta name="color-scheme" content="light">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fafaff;
+    --surface: #ffffff;
+    --text: #1b1d33;
+    --muted: #666a82;
+    --rule: #e6e6f2;
+    --accent: #5046e5;
+    --accent-soft: #eeedff;
+    --warm: #f2603c;
+    --warm-soft: #ffe9e1;
+    --shadow: 0 1px 2px rgba(27,29,51,.04), 0 8px 24px rgba(27,29,51,.06);
+    --display: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.65 var(--body); -webkit-font-smoothing: antialiased; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  a:focus-visible, .btn:focus-visible { outline: 2px solid var(--warm); outline-offset: 3px; border-radius: 4px; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+
+  /* Top bar */
+  .topbar { position: sticky; top: 0; z-index: 10; background: rgba(255,255,255,.82); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--rule); }
+  .topbar .wrap { display: flex; align-items: center; justify-content: space-between; height: 56px; }
+  .brand { font: 600 16px/1 var(--display); color: var(--text); letter-spacing: .01em; }
+  .brand:hover { text-decoration: none; }
+  .brand span { color: var(--warm); }
+  .topbar nav { display: flex; gap: 26px; }
+  .topbar nav a { color: var(--muted); font: 500 13px/1 var(--mono); letter-spacing: .04em; }
+  .topbar nav a:hover { color: var(--accent); text-decoration: none; }
+
+  /* Hero */
+  .hero { position: relative; overflow: hidden; border-bottom: 1px solid var(--rule);
+    background:
+      radial-gradient(620px 380px at 92% 0%, rgba(242,96,60,.16), transparent 62%),
+      radial-gradient(720px 460px at 0% 100%, rgba(80,70,229,.16), transparent 60%),
+      linear-gradient(135deg, #f5f4ff, #fff7f3); }
+  .hero::before { content: ""; position: absolute; inset: 0;
+    background-image: radial-gradient(rgba(80,70,229,.16) 1px, transparent 1px); background-size: 22px 22px;
+    mask-image: linear-gradient(to bottom, #000, transparent 80%); -webkit-mask-image: linear-gradient(to bottom, #000, transparent 80%); }
+  .hero .wrap { position: relative; padding-top: 84px; padding-bottom: 88px; }
+  .eyebrow { font: 500 13px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin: 0 0 18px; }
+  h1 { font: 700 clamp(44px, 7vw, 72px)/1 var(--display); letter-spacing: -.03em; margin: 0 0 20px; }
+  .tagline { font: 400 clamp(19px, 2.4vw, 23px)/1.45 var(--display); color: #3a3d57; margin: 0 0 14px; max-width: 34ch; }
+  .tagline b { font-weight: 600; color: var(--text); background: linear-gradient(transparent 62%, rgba(242,96,60,.38) 62%); }
+  .affil { color: var(--muted); font-size: 15px; margin: 0 0 30px; }
+  .btns { display: flex; flex-wrap: wrap; gap: 10px; }
+  .btn { display: inline-flex; align-items: center; padding: 10px 18px; border-radius: 999px; font: 500 14px/1 var(--body); color: var(--text); background: rgba(255,255,255,.8); border: 1px solid #d6d6e8; transition: border-color .15s, transform .15s, background .15s; }
+  .btn:hover { text-decoration: none; border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  .btn.primary:hover { background: #4138cf; color: #fff; }
+
+  /* Sections */
+  section { padding: 72px 0 0; }
+  section:last-of-type { padding-bottom: 80px; }
+  .head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 28px; }
+  .head .no { font: 500 13px/1 var(--mono); color: var(--warm); }
+  h2 { font: 700 30px/1.1 var(--display); letter-spacing: -.02em; margin: 0; }
+  .head::after { content: ""; flex: 1; height: 1px; background: var(--rule); align-self: center; }
+  p { margin: 0 0 14px; }
+
+  .about { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 40px; align-items: start; }
+  .about p { font-size: 17px; }
+  .card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; box-shadow: var(--shadow); }
+  .news { list-style: none; margin: 0; padding: 6px 28px; }
+  .news li { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 20px; align-items: baseline; padding: 16px 0; font-size: 16px; line-height: 1.5; border-top: 1px solid var(--rule); }
+  .news li:first-child { border-top: 0; }
+  .news time { font: 500 13px/1.5 var(--mono); color: var(--accent); }
+  .bio { color: var(--muted); font-size: 16px; line-height: 1.65; margin: 0 0 30px; max-width: 62ch; }
+
+  /* Research */
+  .theme { font-size: 17px; max-width: 68ch; margin-bottom: 28px; }
+  .tracks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+  .track { padding: 24px; position: relative; overflow: hidden; transition: transform .18s, box-shadow .18s; }
+  .track:hover { transform: translateY(-3px); box-shadow: 0 2px 4px rgba(27,29,51,.05), 0 16px 36px rgba(80,70,229,.14); }
+  .track::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 4px; background: linear-gradient(90deg, var(--accent), var(--warm)); }
+  .icon { width: 44px; height: 44px; border-radius: 12px; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; margin-bottom: 16px; }
+  .icon svg { width: 24px; height: 24px; }
+  .track h3 { font: 600 19px/1.25 var(--display); letter-spacing: -.01em; margin: 0 0 8px; }
+  .track p { font-size: 15px; color: var(--muted); margin: 0 0 16px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { font: 500 11.5px/1 var(--mono); padding: 5px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); }
+
+  /* Publications */
+  .pubs { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+  .pub { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 22px; padding: 20px 24px; align-items: center; transition: border-color .15s, transform .15s; }
+  .pub:hover { border-color: var(--accent); transform: translateX(3px); }
+  .badge { text-align: center; padding: 12px 6px; border-radius: 12px; background: var(--accent-soft); color: var(--accent); }
+  .badge b { display: block; font: 700 17px/1.1 var(--display); letter-spacing: .01em; }
+  .badge span { display: block; font: 500 12px/1 var(--mono); opacity: .8; margin-top: 6px; }
+  .pub .title { font: 600 17.5px/1.35 var(--display); letter-spacing: -.005em; margin: 0 0 6px; }
+  .pub .authors { font-size: 14.5px; color: var(--muted); margin: 0 0 4px; }
+  .pub .authors b { color: var(--text); font-weight: 600; }
+  .pub .venue { font-size: 14px; color: var(--muted); margin: 0; }
+  .pub .venue a { font-weight: 500; }
+  .first { display: inline-block; font: 500 11px/1 var(--mono); letter-spacing: .04em; color: var(--warm); background: var(--warm-soft); padding: 4px 8px; border-radius: 999px; margin-left: 8px; vertical-align: 2px; white-space: nowrap; }
+  .more { margin: 22px 0 0; font-size: 15px; }
+
+  /* Teaching & service */
+  .two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+  .panel { padding: 24px; }
+  .panel h3 { font: 600 19px/1.2 var(--display); margin: 0 0 14px; }
+  .panel ul { list-style: none; margin: 0; padding: 0; }
+  .panel li { padding: 10px 0; border-top: 1px solid var(--rule); font-size: 15px; display: flex; justify-content: space-between; gap: 16px; }
+  .panel li:first-child { border-top: 0; padding-top: 0; }
+  .panel li:last-child { padding-bottom: 0; }
+  .panel small { display: block; color: var(--muted); font-size: 13.5px; }
+  .panel .yr { font: 500 12.5px/1.8 var(--mono); color: var(--muted); white-space: nowrap; }
+
+  footer { border-top: 1px solid var(--rule); padding: 26px 0 40px; color: var(--muted); font-size: 13.5px; }
+  footer .wrap { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  @media (max-width: 860px) {
+    .hero .wrap { padding-top: 52px; padding-bottom: 56px; }
+    .about, .tracks, .two { grid-template-columns: 1fr; }
+    .about { gap: 28px; }
+    section { padding-top: 56px; }
+  }
+  @media (max-width: 560px) {
+    .wrap { padding: 0 16px; }
+    .topbar nav { gap: 16px; }
+    .topbar nav a { font-size: 12px; }
+    .brand { display: none; }
+    .topbar .wrap { justify-content: center; }
+    h2 { font-size: 26px; }
+    .pub { grid-template-columns: 1fr; gap: 14px; padding: 18px; }
+    .badge { display: inline-flex; align-items: baseline; gap: 8px; justify-self: start; padding: 7px 12px; }
+    .badge span { margin: 0; }
+    .panel li { flex-direction: column; gap: 2px; }
+  }
+
+  /* Publication covers */
+  .pub { grid-template-columns: 260px minmax(0, 1fr); gap: 24px; padding: 16px 24px 16px 16px; }
+  .cover { display: block; aspect-ratio: 5 / 3; padding: 8px; background: #fff; border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+  .cover img { display: block; width: 100%; height: 100%; object-fit: contain; }
+  .badge { display: inline-flex; align-items: baseline; gap: 8px; padding: 5px 11px; border-radius: 999px; margin-bottom: 8px; }
+  .badge b { display: inline; font-size: 13px; }
+  .badge span { display: inline; margin: 0; }
+  @media (max-width: 720px) {
+    .pub { grid-template-columns: 1fr; gap: 14px; padding: 16px; }
+  }
+
+  /* Projects */
+  .project { padding: 26px; display: flex; flex-direction: column; }
+  .pmeta { display: flex; justify-content: space-between; gap: 12px; font: 500 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 14px; }
+  .pmeta span:first-child { color: var(--warm); }
+  .project h3 { font: 600 21px/1.25 var(--display); letter-spacing: -.01em; margin: 0 0 4px; }
+  .project .with { font-size: 14px; font-weight: 500; color: var(--accent); margin: 0 0 14px; }
+  .project p { font-size: 15px; color: var(--muted); }
+  .project .outcome { color: var(--text); font-weight: 500; padding-left: 12px; border-left: 3px solid var(--warm); margin-bottom: 18px; }
+  .project .chips { margin-top: auto; }
+  /* Hero portrait */
+  .hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 56px; align-items: center; }
+  .portrait { position: relative; margin: 0 14px 14px 0; }
+  .portrait::before { content: ""; position: absolute; inset: 14px -14px -14px 14px; border-radius: 18px; background: var(--accent-soft); border: 1px solid var(--rule); }
+  .portrait img { position: relative; display: block; width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 18px; box-shadow: var(--shadow); }
+  @media (max-width: 860px) {
+    .hero-grid { grid-template-columns: minmax(0, 1fr) 170px; gap: 36px; }
+  }
+  @media (max-width: 560px) {
+    .news { padding: 4px 20px; }
+    .news li { grid-template-columns: 1fr; gap: 2px; }
+    .hero-grid { grid-template-columns: 1fr; gap: 28px; }
+    .portrait { grid-row: 1; width: 120px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="#top">Yuning Zhang<span>.</span></a>
+    <nav aria-label="Sections">
+      <a href="#news">News</a>
+      <a href="#research">Research</a>
+      <a href="#projects">Projects</a>
+      <a href="#publications">Papers</a>
+      <a href="#teaching">Teaching</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="eyebrow">PhD Candidate · Systems for ML</p>
+      <h1>Yuning Zhang</h1>
+      <p class="tagline">I design and build efficient <b>AI inference serving</b> systems for LLMs, agents, and multimodal models.</p>
+      <p class="bio">I am a final-year PhD candidate at the University of Sydney, advised by A/Prof. Dong Yuan. My research is on the design and implementation of efficient AI inference systems: runtime scheduling, resource management, and execution of LLM-based agents and multimodal models on heterogeneous computing platforms.</p>
+      <div class="btns">
+        <a class="btn primary" href="mailto:yzha9041@gmail.com">Email me</a>
+        <a class="btn" href="https://scholar.google.com/citations?user=yFmzkBoAAAAJ">Google Scholar</a>
+        <a class="btn" href="https://www.linkedin.com/in/yuning-zhang-906245236/">LinkedIn</a>
+      </div>
+    </div>
+    <figure class="portrait"><img src="assets/portrait.jpg" alt="Yuning Zhang" width="480" height="600"></figure>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <section id="news">
+    <div class="head"><span class="no">01</span><h2>News</h2></div>
+    <ul class="card news">
+      <li><time>Oct 2026</time><span>AgentServe accepted to <em>IEEE Transactions on Computers</em>.</span></li>
+      <li><time>Aug 2026</time><span>Joined Western Sydney University as a Research Assistant on onboard space AI inference.</span></li>
+      <li><time>Jan 2026</time><span>Program Committee member, IEEE/ACM CCGrid 2026.</span></li>
+      <li><time>Oct 2025</time><span>Joint allocation and batching paper accepted to <em>IEEE TPDS</em>.</span></li>
+    </ul>
+  </section>
+
+  <section id="research">
+    <div class="head"><span class="no">02</span><h2>Research: AI Inference Serving</h2></div>
+    <p class="theme">Modern AI workloads share GPUs that were never designed to be shared. I study how a serving runtime should schedule, batch, and isolate competing requests so that every workload meets its latency target without wasting compute or memory.</p>
+    <div class="tracks">
+      <article class="card track">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1.5"/><rect x="3" y="10" width="11" height="4" rx="1.5"/><rect x="3" y="16" width="15" height="4" rx="1.5"/></svg></div>
+        <h3>Multi-tenant GPU serving</h3>
+        <p>Jointly deciding how much GPU each tenant gets and how its requests are batched, with performance isolation between concurrent Transformer workloads.</p>
+        <div class="chips"><span class="chip">TPDS '26</span><span class="chip">ICPP '23</span></div>
+      </article>
+      <article class="card track">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2.5"/><circle cx="5" cy="18" r="2.5"/><circle cx="19" cy="18" r="2.5"/><path d="M10.8 7.2 6.2 15.8M13.2 7.2l4.6 8.6M7.5 18h9"/></svg></div>
+        <h3>Agentic and LLM serving</h3>
+        <p>Algorithm-system co-design for LLM agents, mixture-of-experts, and multimodal models on consumer-grade and private machines, mixing online and offline requests.</p>
+        <div class="chips"><span class="chip">TC '26</span><span class="chip">TC '25</span></div>
+      </article>
+      <article class="card track">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="11" rx="3"/><path d="M12 8V4M9 13v1.5M15 13v1.5M2.5 12.5v3M21.5 12.5v3"/><circle cx="12" cy="3.5" r="1"/></svg></div>
+        <h3>Embodied AI serving</h3>
+        <p>Serving vision-language-action policies for robots and edge platforms: several policies sharing one GPU, batching around control deadlines, and speculative decoding that preserves task success.</p>
+        <div class="chips"><span class="chip">Ongoing</span></div>
+      </article>
+    </div>
+  </section>
+
+  <section id="projects">
+    <div class="head"><span class="no">03</span><h2>Projects</h2></div>
+    <div class="two">
+      <article class="card project">
+        <p class="pmeta"><span>Industry project</span><span>2025 – now</span></p>
+        <h3>Local Multi-Agent AI for Smart Homes</h3>
+        <p class="with">The University of Sydney &amp; Konnext Pty Ltd</p>
+        <p>I lead an industry-partnered team building a privacy-preserving smart-home platform that runs entirely on local hardware. Modular agent workflows combine retrieval-augmented generation, long-term memory, adapted small language models, and reliable device control.</p>
+        <p class="outcome">Delivered to the industry partner for customer operation.</p>
+        <div class="chips"><span class="chip">Multi-agent</span><span class="chip">RAG</span><span class="chip">Small LMs</span><span class="chip">On-device</span></div>
+      </article>
+      <article class="card project">
+        <p class="pmeta"><span>Research project</span><span>2026 – now</span></p>
+        <h3>Onboard Space AI Inference Serving</h3>
+        <p class="with">Western Sydney University</p>
+        <p>As a Research Assistant, I study how online and offline AI inference can share one NVIDIA Jetson onboard a satellite. I characterise latency, batching, power, and thermal behaviour under changing orbital energy constraints, and design runtime policies that protect urgent requests.</p>
+        <p class="outcome">Building an onboard Jetson prototype evaluated for timeliness, energy use, and thermal limits.</p>
+        <div class="chips"><span class="chip">NVIDIA Jetson</span><span class="chip">Energy-aware</span><span class="chip">Edge serving</span></div>
+      </article>
+    </div>
+  </section>
+
+  <section id="publications">
+    <div class="head"><span class="no">04</span><h2>Selected Publications</h2></div>
+    <ol class="pubs">
+      <li class="card pub">
+        <a class="cover" href="assets/agentserve.png" target="_blank" rel="noopener"><img src="assets/agentserve.png" alt="AgentServe system overview" loading="lazy"></a>
+        <div>
+          <div class="badge"><b>TC</b><span>2026</span></div>
+          <p class="title">AgentServe: Algorithm-System Co-Design for Efficient Agentic AI Serving on a Consumer-Grade GPU<span class="first">first author</span></p>
+          <p class="authors"><b>Yuning Zhang</b>, Y. Yan, N. Yang, D. Yuan</p>
+          <p class="venue">IEEE Transactions on Computers · <a href="https://doi.org/10.1109/TC.2026.3745924">DOI</a></p>
+        </div>
+      </li>
+      <li class="card pub">
+        <a class="cover" href="assets/tpds.png" target="_blank" rel="noopener"><img src="assets/tpds.png" alt="System overview of joint GPU partitioning and request batching" loading="lazy"></a>
+        <div>
+          <div class="badge"><b>TPDS</b><span>2026</span></div>
+          <p class="title">Joint Optimization of Resource Allocation and Request Batching for Multi-Tenant Inference Serving on GPU<span class="first">first author</span></p>
+          <p class="authors"><b>Yuning Zhang</b>, N. Yang, C. Pan, D. Yuan</p>
+          <p class="venue">IEEE Transactions on Parallel and Distributed Systems, 37(1), 287–303 · <a href="https://doi.org/10.1109/TPDS.2025.3627574">DOI</a></p>
+        </div>
+      </li>
+      <li class="card pub">
+        <a class="cover" href="assets/itif.png" target="_blank" rel="noopener"><img src="assets/itif.png" alt="ITIF request and operator batching overview" loading="lazy"></a>
+        <div>
+          <div class="badge"><b>ICPP</b><span>2023</span></div>
+          <p class="title">ITIF: Integrated Transformers Inference Framework for Multiple Tenants on GPU<span class="first">first author</span></p>
+          <p class="authors"><b>Yuning Zhang</b>, Z. Zhang, W. Bao, D. Yuan</p>
+          <p class="venue">52nd International Conference on Parallel Processing, 112–121 · <a href="https://doi.org/10.1145/3605573.3605585">DOI</a></p>
+        </div>
+      </li>
+      <li class="card pub">
+        <a class="cover" href="assets/hybrid.png" target="_blank" rel="noopener"><img src="assets/hybrid.png" alt="Hybrid online and offline LLM serving system overview" loading="lazy"></a>
+        <div>
+          <div class="badge"><b>TC</b><span>2025</span></div>
+          <p class="title">A Hybrid Online and Offline Requests Inference Serving System for LLM in Private Computer Environment</p>
+          <p class="authors">Y. Shen, <b>Yuning Zhang</b>, D. Yuan</p>
+          <p class="venue">IEEE Transactions on Computers, 75(3), 888–900</p>
+        </div>
+      </li>
+      <li class="card pub">
+        <a class="cover" href="assets/mosaicufl.png" target="_blank" rel="noopener"><img src="assets/mosaicufl.png" alt="MosaicUFL framework overview" loading="lazy"></a>
+        <div>
+          <div class="badge"><b>IPDPS</b><span>2026</span></div>
+          <p class="title">MosaicUFL: A Fine-Grained Unlabeled Client Selection Framework for Efficient Federated Learning</p>
+          <p class="authors">N. Yang, Z. Wen, <b>Yuning Zhang</b>, Y. Li, H. Chen, D. Yuan</p>
+          <p class="venue">IEEE International Parallel and Distributed Processing Symposium, 693–706</p>
+        </div>
+      </li>
+    </ol>
+    <p class="more">Full list on <a href="https://scholar.google.com/citations?user=yFmzkBoAAAAJ">Google Scholar →</a></p>
+  </section>
+
+  <section id="teaching">
+    <div class="head"><span class="no">05</span><h2>Teaching &amp; Service</h2></div>
+    <div class="two">
+      <div class="card panel">
+        <h3>Teaching</h3>
+        <ul>
+          <li><span>ELEC5620 Model Based Software Engineering<small>Tutor &amp; Lab Demonstrator</small></span><span class="yr">2025 – now</span></li>
+          <li><span>ELEC5619 Object Oriented Application Frameworks<small>Lab Demonstrator</small></span><span class="yr">2022 – 2024</span></li>
+          <li><span>ELEC1005 Introduction to Software Engineering<small>Lab Demonstrator</small></span><span class="yr">2022 – 2024</span></li>
+        </ul>
+      </div>
+      <div class="card panel">
+        <h3>Academic service</h3>
+        <ul>
+          <li><span>IEEE/ACM CCGrid<small>Program Committee Member</small></span><span class="yr">2026</span></li>
+          <li><span>ICSOC<small>Reviewer</small></span></li>
+          <li><span>Concurrency and Computation: Practice and Experience<small>Journal reviewer</small></span></li>
+          <li><span>The Journal of Supercomputing<small>Journal reviewer</small></span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Yuning Zhang · Sydney, Australia</span>
+    <a href="#top">Back to top ↑</a>
+  </div>
+</footer>
+
+</body>
+</html>
